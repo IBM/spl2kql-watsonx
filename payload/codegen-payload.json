@@ -7,10 +7,6 @@
       "output_prefix": "SQL:",
       "examples": [
         {
-          "input": "source='StormEvents.csv' | head 5",
-          "output": "StormEvents | take 5"
-        },
-        {
           "input": "source='events_all.csv'| stats count as Count by qid_event_category| sort Count | head 20",
           "output": "events_all | summarize Count = count() by qid_event_category | top 20 by Count asc"
         },
@@ -25,10 +21,6 @@
         {
           "input": "source='events_all.csv' dst_port=443 src_ip!='192.168.0.0/16' | stats count by src_ip, dst_ip, dst_port | sort - count | head 5",
           "output": "events_all | where dst_port == 443 and ipv4_is_match(src_ip, '192.168.0.0/16') == false | summarize count() by src_ip, dst_ip, dst_port | top 5 by count_ desc"
-        },
-        {
-          "input": "source='Perf.csv' | stats count by CounterName",
-          "output": "Perf | summarize count() by CounterName"
         },
         {
           "input": "source='events_all.csv' | stats count as Events by data_source_name | where NOT data_source_name='' | sort -Events | head 5 | table data_source_name, Events",
