@@ -1,0 +1,63 @@
+{
+  "model_id": "meta-llama/llama-2-70b-chat",
+  "template": {
+    "id": "prompt_builder",
+    "data": {
+      "instruction": "Convert given SPL queries to KQL (Kusto Query Language) format.",
+      "output_prefix": "SQL:",
+      "examples": [
+        {
+          "input": "source='StormEvents.csv' | head 5",
+          "output": "StormEvents | take 5"
+        },
+        {
+          "input": "source='events_all.csv'| stats count as Count by qid_event_category| sort Count | head 20",
+          "output": "events_all | summarize Count = count() by qid_event_category | top 20 by Count asc"
+        },
+        {
+          "input": "source='events_all.csv'| stats count as Count by qid_event_category| sort -Count | head 20",
+          "output": "events_all | summarize Count = count() by qid_event_category | top 20 by Count desc"
+        },
+        {
+          "input": "source='events_all.csv' | stats avg(src_packets), max(src_packets), min(src_packets) by src_ip, dst_ip' | head 5",
+          "output": "events_all | summarize avg(src_packets), max(src_packets), min(src_packets) by src_ip, dst_ip"
+        },
+        {
+          "input": "source='events_all.csv' dst_port=443 src_ip!='192.168.0.0/16' | stats count by src_ip, dst_ip, dst_port | sort - count | head 5",
+          "output": "events_all | where dst_port == 443 and ipv4_is_match(src_ip, '192.168.0.0/16') == false | summarize count() by src_ip, dst_ip, dst_port | top 5 by count_ desc"
+        },
+        {
+          "input": "source='Perf.csv' | stats count by CounterName",
+          "output": "Perf | summarize count() by CounterName"
+        },
+        {
+          "input": "source='events_all.csv' | stats count as Events by data_source_name | where NOT data_source_name='' | sort -Events | head 5 | table data_source_name, Events",
+          "output": "events_all | summarize Events = count() by data_source_name | where data_source_name != '' | top 5 by Events desc | project data_source_name, Events"
+        },
+        {
+          "input": "source='events_all.csv' | stats count as Events by data_source_name | where NOT data_source_name='' | sort Events | head 5 | table data_source_name, Events",
+          "output": "events_all | summarize Events = count() by data_source_name | where data_source_name != '' | top 5 by Events asc | project data_source_name, Events"
+        },
+        {
+          "input": "source='events_all.csv' | table data_source_name, name, user_id, low_level_categories, src_ip, src_port, dst_ip, dst_port, payload | search payload='*snmp_decoder*' | head 100",
+          "output": "events_all | project  data_source_name, name, user_id, low_level_categories,src_ip, src_port, dst_ip, dst_port, payload | where payload has 'snmp_decoder' | take 100"
+        },
+        {
+          "input": "source='events_all.csv' src_ip='127.0.0.1' earliest=-24h | eval original_time=strftime(strptime(original_time,'%s%3N'),'%Y-%m-%d %H:%M:%S') | table original_time, data_source_name, name, user_id, low_level_categories, src_ip, src_port, dst_ip, dst_port, payload | head 100",
+          "output": "events _all | project original_time, data_source_name, name, user_id, low_level_categories, src_port, dst_ip, dst_port, payload | where original_time > ago(24h) and src_ip = '127.0.0.1' | take 100"
+        }
+      ]
+    }
+  },
+  "parameters": {
+    "decoding_method": "greedy",
+    "stop_sequences": [
+      "\n\n"
+    ],
+    "min_new_tokens": 1,
+    "max_new_tokens": 1536,
+    "beam_width": 1
+  },
+  "inputs": []
+}
+
